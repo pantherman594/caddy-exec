@@ -35,6 +35,16 @@ type Cmd struct {
 	// handler in the route instead of responding directly
 	PassThru bool `json:"pass_thru,omitempty"`
 
+	// Sets the output placeholder, which writes the output of
+	// the command to a placeholder that can be used by the Next
+	// handler. Only useful if Foreground and PassThru are both true.
+	OutPlaceholder string `json:"out_placeholder,omitempty"`
+
+	// Sets the err placeholder, which writes the error output of
+	// the command to a placeholder that can be used by the Next
+	// handler. Only useful if Foreground and PassThru are both true.
+	ErrPlaceholder string `json:"err_placeholder,omitempty"`
+
 	// Timeout for the command. The command will be killed
 	// after timeout has elapsed if it is still running.
 	// Defaults to 10s.

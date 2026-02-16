@@ -2,7 +2,9 @@ package command
 
 import (
 	"context"
+	"io"
 	"os/exec"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -17,7 +19,7 @@ type runnerFunc func() error
 
 func (r runnerFunc) Run() error { return r() }
 
-func (c *Cmd) run(args []string) error {
+func (c *Cmd) run(args []string) (string, string, error) {
 	cmdInfo := zap.Any("command", append([]string{c.Command}, args...))
 	log := c.log.With(cmdInfo)
 	startTime := time.Now()
@@ -39,6 +41,9 @@ func (c *Cmd) run(args []string) error {
 		cmd = exec.CommandContext(ctx, c.Command, args...)
 	}
 
+	var outBuffer strings.Builder
+	var errBuffer strings.Builder
+
 	// configure command
 	{
 		cmd.Stdout = c.stdWriter
@@ -47,9 +52,15 @@ func (c *Cmd) run(args []string) error {
 			cmd.Stderr = c.errWriter
 		}
 		cmd.Dir = c.Directory
+		if len(c.OutPlaceholder) > 0 {
+			cmd.Stdout = io.MultiWriter(cmd.Stdout, &outBuffer)
+		}
+		if len(c.ErrPlaceholder) > 0 {
+			cmd.Stderr = io.MultiWriter(cmd.Stderr, &errBuffer)
+		}
 	}
 
-	wait := func(err error) error {
+	wait := func(err error) (string, string, error) {
 		// only wait if start was successful
 		if cmd.Process != nil {
 			// err is empty, we can reuse it without losing any info
@@ -59,13 +70,16 @@ func (c *Cmd) run(args []string) error {
 
 		log = log.With(zap.Duration("duration", time.Since(startTime))).Named("exit")
 
+		cmdOut := outBuffer.String()
+		cmdErr := errBuffer.String()
+
 		if err != nil {
 			log.Error("", zap.Error(err))
-			return err
+			return cmdOut, cmdErr, err
 		}
 
 		log.Info("")
-		return nil
+		return cmdOut, cmdErr, nil
 	}
 
 	// start command
@@ -76,5 +90,5 @@ func (c *Cmd) run(args []string) error {
 	}
 
 	go wait(err)
-	return err
+	return "", "", err
 }

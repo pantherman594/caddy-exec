@@ -54,7 +54,8 @@ func (a *App) Provision(ctx caddy.Context) error {
 		}
 
 		runner := runnerFunc(func() error {
-			return cmd.run(argv)
+			_, _, err := cmd.run(argv)
+			return err
 		})
 
 		for at := range cmd.at {

@@ -2,6 +2,7 @@ package command
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/caddyserver/caddy/v2"
@@ -48,7 +49,13 @@ func (m Middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddy
 		argv[index] = repl.ReplaceAll(argument, "")
 	}
 
-	err := m.run(argv)
+	cmdOut, cmdErr, err := m.run(argv)
+	if len(m.OutPlaceholder) > 0 {
+		repl.Set(fmt.Sprintf("exec.outputs.%s", m.OutPlaceholder), cmdOut)
+	}
+	if len(m.ErrPlaceholder) > 0 {
+		repl.Set(fmt.Sprintf("exec.errors.%s", m.ErrPlaceholder), cmdErr)
+	}
 
 	if m.PassThru {
 		if err != nil {

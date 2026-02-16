@@ -21,12 +21,14 @@ They can also be configured to run in the background or foreground and to be ter
 
 ```
 exec [<matcher>] [<command> [<args...>]] {
-    command     <command> [<args...>]
-    args        <args...>
-    directory   <directory>
-    timeout     <timeout>
-    log         <log output module>
-    err_log     <log output module>
+    command         <command> [<args...>]
+    args            <args...>
+    directory       <directory>
+    timeout         <timeout>
+    log             <log output module>
+    err_log         <log output module>
+    out_placeholder <output placeholder name>
+    err_placeholder <err placeholder name>
     foreground
     pass_thru
     startup
@@ -41,6 +43,8 @@ exec [<matcher>] [<command> [<args...>]] {
 - **timeout** - timeout to terminate the command's process. Default is `10s`. A timeout of `0` runs indefinitely.
 - **log** - [Caddy log output module](https://caddyserver.com/docs/caddyfile/directives/log#output-modules) for standard output log. Defaults to `stderr`.
 - **err_log** - [Caddy log output module](https://caddyserver.com/docs/caddyfile/directives/log#output-modules) for standard error log. Defaults to the value of `log` (standard output log).
+- **out_placeholder** - if present, stores the standard output of the command in a placeholder with the name `{exec.outputs.[name]}`. This allows you to use the output in subsequent handlers in the route or in the response.
+- **err_placeholder** - if present, stores the standard error of the command in a placeholder with the name `{exec.errors.[name]}`. This allows you to use the error in subsequent handlers in the route or in the response.
 - **foreground** - if present, runs the command in the foreground. For commands at http endpoints, the command will exit before the http request is responded to.
 - **pass_thru** - if present, enables pass-thru mode, which continues to the next HTTP handler in the route instead of responding directly
 - **startup** - if present, run the command at startup. Ignored in routes.

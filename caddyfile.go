@@ -148,6 +148,14 @@ func (c *Cmd) unmarshalBlock(d *caddyfile.Dispenser) error {
 			if !d.Args(&c.Timeout) {
 				return d.ArgErr()
 			}
+		case "out_placeholder":
+			if !d.Args(&c.OutPlaceholder) {
+				return d.ArgErr()
+			}
+		case "err_placeholder":
+			if !d.Args(&c.ErrPlaceholder) {
+				return d.ArgErr()
+			}
 		case "log":
 			rawMessage, err := c.unmarshalLog(d)
 			if err != nil {
